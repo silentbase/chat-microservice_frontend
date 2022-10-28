@@ -1,4 +1,6 @@
-# nest_front
+## Repository auf eigenen Rechner klonen
+
+git clone [repository]
 
 ## Project setup
 ```
@@ -19,6 +21,3 @@ npm run build
 ```
 npm run lint
 ```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).

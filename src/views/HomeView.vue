@@ -1,12 +1,12 @@
 <template>
   <div id="main_frame">
     <div id="contacts">
-      <input type="text" id="searchbox">
+      <input type="text" id="searchbox" v-model="searchInput" ref="searchInput">
 
-      <div id="contact-element" class="contactElement" v-bind:class="contact" ref="contact-element" v-for="(contact) in contacts" :key="contact.id" @click="clickOnContact(contact)">
+      <div id="contact-element" class="contactElement" v-bind:class="contact" ref="contact-element" v-for="(contact) in searchedContacts" :key="contact.id" @click="clickOnContact(contact)">
         
         <div class="contactName" >{{contact}}</div>
-        <div class="messageCounter-element"><div id="msgCounter" v-show="msgCounterShow">{{msgCounter}}</div>
+        <div class="messageCounter-element">
       </div> 
       </div>
     </div>
@@ -46,7 +46,7 @@ export default {
       selectedContactMsgs: [],
       contacts: [],
       socket: null,
-      msgCounter: 0,
+      searchInput: ''
     }
   },
   methods: {
@@ -95,8 +95,6 @@ export default {
     msgCounterShow: function(){
       this.$refs.contact-element.$el
     }
-
-
   },
 
   computed: {
@@ -109,6 +107,13 @@ export default {
         }
       }
       return this.selectedContactMsgs;
+    }, 
+    searchedContacts(){
+      if(this.searchInput.length != 0){
+        return this.contacts.filter((element) => String(element).includes(this.searchInput))
+      } else {
+        return this.contacts;
+      }
     }
   },
 
@@ -131,38 +136,29 @@ export default {
   beforeMount() {
 
     this.socket.emit('findAllMessages', localStorage.getItem('login'), (response) => {
-      console.log(response)
       this.msgs = response
     })
   },
   mounted() {
-    console.log(document.getElementsByClassName('contactElement')[1])
     this.socket.on('msg', (response) => {
-      //this.msgCounter = this.msgCounter+1;
-      //this.msgCounterShow = true
       this.msgs.push(response);
       var container = this.$el.querySelector("#history_frame");
       container.scrollTop = container.scrollHeight;
-      console.log("from: " + response.from)
       this.socket.emit('confirmMsg', response, (response2) => {
-        console.log("response2:" + response2)
       })
     })
 
     this.socket.on('confirmMsg', (response) => {
       this.msgs.push(response);
-      console.log(response);
 
     })
 
     this.socket.on('login', (response) => {
 
       if (this.contacts.find((contact) => contact == response) != undefined) {
-        console.log(response);
         return;
       }
       if (localStorage.getItem('login') == response) {
-        console.log(response);
         return;
       }
       this.contacts.push(response)
